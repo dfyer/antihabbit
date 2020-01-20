@@ -92,8 +92,8 @@ export default {
       this.csv.forEach(element=> {
         let total = Number(element[4])/180 + Number(element[5])/500
         if (total == 0) { raw_weeks.push([element[0], "none"]) }
-        else if (total < 1) { raw_weeks.push([element[0], "low"]) }
-        else if (total < 2) { raw_weeks.push([element[0], "mid"]) }
+        else if (total <= 1) { raw_weeks.push([element[0], "low"]) }
+        else if (total <= 2) { raw_weeks.push([element[0], "mid"]) }
         else { raw_weeks.push([element[0], "high"]) }
       })
       while(raw_weeks.length) this.weeks.push(raw_weeks.splice(0,7));
