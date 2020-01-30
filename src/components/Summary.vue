@@ -1,10 +1,12 @@
 <template>
   <div class="summary">
-    <h3>Alcohol</h3>
+    <h3>Alcohol Summary</h3>
+    <!--
     <div>
       <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
       <button v-on:click="submitFile()">Submit</button>
     </div>
+    -->
 
     <div id="summary-bar">
       <div class="week" v-for="week in weeks">
@@ -46,6 +48,9 @@ export default {
     'sketch-picker': Sketch,
     'vue-csv-import': VueCsvImport,
   },
+  props: [
+    'dates', 'totals'
+  ],
   data () {
     return {
       // CSV
@@ -65,15 +70,18 @@ export default {
       mid: { hex: '#13955A', },
       low: { hex: '#1B543A', },
       none: { hex: '#222D28', },
-      csv: [ [ "2020-01-01", "", "0.5큰병, 500 1캔", "심술7도 0.5병, 심술12도 0.5병", "120", "900" ], [ "2020-01-02", "", "500 1캔", "", "", "500" ], [ "2020-01-03", "2.5병", "", "", "900", "" ], [ "2020-01-04", "", "1500", "", "", "1500" ], [ "2020-01-05", "", "500", "", "", "500" ], [ "2020-01-06", "", "820", "", "", "820" ], [ "2020-01-07", "", "", "", "", "" ], [ "2020-01-08", "", "", "", "", "" ], [ "2020-01-09", "", "", "", "", "" ], [ "2020-01-10", "", "", "", "", "" ], [ "2020-01-11", "", "", "", "", "" ], [ "2020-01-12", "", "", "", "", "" ], [ "2020-01-13", "", "", "", "", "" ], [ "2020-01-14", "", "", "", "", "" ], [ "2020-01-15", "", "", "", "", "" ], [ "2020-01-16", "", "", "", "", "" ], [ "2020-01-17", "", "", "", "", "" ], [ "2020-01-18", "", "", "", "", "" ], [ "2020-01-19", "", "", "", "", "" ], [ "2020-01-20", "", "", "", "", "" ], [ "2020-01-21", "", "", "", "", "" ], [ "2020-01-22", "", "", "", "", "" ], [ "2020-01-23", "", "", "", "", "" ], [ "2020-01-24", "", "", "", "", "" ], [ "2020-01-25", "", "", "", "", "" ], [ "2020-01-26", "", "", "", "", "" ], [ "2020-01-27", "", "", "", "", "" ], [ "2020-01-28", "", "", "", "", "" ], [ "2020-01-29", "", "", "", "", "" ], [ "2020-01-30", "", "", "", "", "" ], [ "2020-01-31", "", "", "", "", "" ] ],
+      csv: '',
       weeks: [],
     }
   },
   methods: {
     handleFileUpload() {
+      /* deprecated
       this.file = this.$refs.file.files[0];
+      */
     },
     submitFile() {
+      /* deprecated
       let self = this;
       this.$papa.parse(this.file, {
       	complete: function(results) {
@@ -81,22 +89,31 @@ export default {
           self.loadSummaryBar();
       	}
       });
+      */
     },
     loadSummaryBar() {
       this.weeks = []
 
       let raw_weeks = []
-      for (let i = 0; i < (new Date(this.csv[0][0])).getDay(); i++) {
+      for (let i = 0; i < (new Date(this.dates[0])).getDay(); i++) {
         raw_weeks.push(["", "blank"]);
       }
-      this.csv.forEach(element=> {
-        let total = Number(element[4])/180 + Number(element[5])/500
-        if (total == 0) { raw_weeks.push([element[0], "none"]) }
-        else if (total <= 1) { raw_weeks.push([element[0], "low"]) }
-        else if (total <= 2) { raw_weeks.push([element[0], "mid"]) }
-        else { raw_weeks.push([element[0], "high"]) }
-      })
+      for (let i = 0; i < this.dates.length; i++) {
+        let total_criteria = "";
+        if (this.totals[i] == 0) {
+          total_criteria = "none";
+        } else if (this.totals[i] <= 1) {
+          total_criteria = "low";
+        } else if (this.totals[i] <= 2) {
+          total_criteria = "mid";
+        } else {
+          total_criteria = "high";
+        }
+        raw_weeks.push([this.dates[i], total_criteria]);
+      }
       while(raw_weeks.length) this.weeks.push(raw_weeks.splice(0,7));
+
+      console.log(this.weeks);
     },
     isToday(dateStr) {
       const today = new Date()
@@ -127,8 +144,10 @@ export default {
       return ret_val
     }
   },
-  mounted() {
-    this.loadSummaryBar()
+  watch: {
+    totals: function (val) {
+      this.loadSummaryBar()
+    }
   },
 }
 </script>
